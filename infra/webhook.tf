@@ -18,13 +18,19 @@ resource "aws_iam_role" "iam_for_lambda" {
 EOF
 }
 
+data "archive_file" "webhook_zip" {
+  type        = "zip"
+  source_file = "../webhook/dist/main"
+  output_path = "dist/lambda_function.zip"
+}
+
 resource "aws_lambda_function" "webhook_lambda" {
-  # filename      = "lambda_function_payload.zip"
+  filename      = "dist/lambda_function.zip"
   function_name = "miaomiaochatbot_webhook"
   role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "index.handler"
+  handler       = "main"
 
-  # source_code_hash = filebase64sha256("lambda_function_payload.zip")
+  source_code_hash = data.archive_file.webhook_zip.output_base64sha256
 
   runtime = "go1.x"
 
@@ -33,4 +39,8 @@ resource "aws_lambda_function" "webhook_lambda" {
       BOT_API_TOKEN = var.bot_api_token
     }
   }
+}
+
+output "webhook_lambda_arn" {
+  value = aws_lambda_function.webhook_lambda.arn
 }
