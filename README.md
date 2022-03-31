@@ -1,0 +1,3 @@
+# MiaoMiaoChatBot
+
+`./init.sh`
